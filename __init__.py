@@ -15,24 +15,20 @@
 # You should have received a copy of the GNU General Public License
 # along with Mycroft Core.  If not, see <http://www.gnu.org/licenses/>.
 
-from adapt.intent import IntentBuilder
-
-from mycroft.skills.core import MycroftSkill, intent_handler, intent_file_handler
-from mycroft.util.log import LOG
+import time
 
 import pyautogui
-import platform
-import time
 from num2words import num2words
+from ovos_workshop.decorators import intent_handler, intent_file_handler
+from ovos_workshop.intents import IntentBuilder
+from ovos_workshop.skills.ovos import OVOSSkill
 
 __author__ = 'TREE_Ind'
 
-class DesktopControlSkill(MycroftSkill):
-    def __init__(self):
-        super(DesktopControlSkill, self).__init__(name="DesktopControlSkill")
+
+class DesktopControlSkill(OVOSSkill):
 
     def initialize(self):
-        
         self.sm_amount = 2
         self.med_amount = 6
         self.lg_amount = 12
@@ -47,17 +43,17 @@ class DesktopControlSkill(MycroftSkill):
         self.register_entity_file("up.entity")
         self.register_entity_file("right.entity")
         self.register_entity_file("left.entity")
-        
+
         self.register_entity_file("x.entity")
         self.register_entity_file("y.entity")
-        
+
         self.register_entity_file("key.entity")
 
         select_combination_intent = IntentBuilder("SelectCombinationIntent"). \
             require("SelectAllKeyword").optionally("CopyKeyword"). \
-                                        optionally("CutKeyword"). \
-                                        optionally("PasteKeyword").\
-                                        optionally("DeleteKeyword").build()
+            optionally("CutKeyword"). \
+            optionally("PasteKeyword"). \
+            optionally("DeleteKeyword").build()
         self.register_intent(select_combination_intent, self.handle_select_combination_intent)
 
     @intent_file_handler("scroll.intent")
@@ -126,7 +122,7 @@ class DesktopControlSkill(MycroftSkill):
             if message.data.get("up"):
                 move_up = self.lg_move_amount * -1
                 pyautogui.moveRel(0, move_up)
-    
+
     @intent_handler(IntentBuilder("ScreenResIntent").require("ScreenResKeyword"))
     def handle_screen_res_intent(self, message):
         screen = pyautogui.size()
@@ -154,7 +150,7 @@ class DesktopControlSkill(MycroftSkill):
         key = message.data.get('key')
         self.speak_dialog("keyrelease", {"key": key})
         pyautogui.keyUp(key)
-    
+
     @intent_file_handler("next.intent")
     def handle_next_slide_intent(self, message):
         pyautogui.press('right')
@@ -194,11 +190,3 @@ class DesktopControlSkill(MycroftSkill):
             pyautogui.keyUp("delete")
         else:
             pass
-            
-
-    def stop(self):
-        pass
-
-
-def create_skill():
-    return DesktopControlSkill()
